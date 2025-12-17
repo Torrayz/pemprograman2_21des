@@ -1,0 +1,196 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+}
+
+.container {
+    width: 100%;
+    max-width: 1100px;
+    background: rgba(255,255,255,0.16);
+    backdrop-filter: blur(14px);
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.25);
+    animation: fadeIn 0.8s ease;
+}
+
+/* HEADER */
+.app-header {
+    margin-bottom: 20px;
+}
+
+.app-header h2 {
+    color: white;
+    letter-spacing: 1px;
+}
+
+.app-header p {
+    color: rgba(255,255,255,0.8);
+    font-size: 14px;
+}
+
+/* BUTTON */
+.button {
+    display: inline-block;
+    padding: 10px 18px;
+    background: rgba(255,255,255,0.28);
+    color: white;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.button:hover {
+    background: rgba(255,255,255,0.45);
+    transform: translateY(-2px);
+}
+
+/* ALERT */
+.alert {
+    background: rgba(255,255,255,0.25);
+    padding: 12px;
+    border-radius: 12px;
+    margin: 15px 0;
+    color: white;
+}
+
+/* TABLE */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+th, td {
+    padding: 12px;
+    color: white;
+    text-align: center;
+}
+
+th {
+    background: rgba(255,255,255,0.3);
+}
+
+tr {
+    transition: background 0.3s;
+    animation: slideUp 0.4s ease;
+}
+
+tr:hover {
+    background: rgba(255,255,255,0.12);
+}
+
+/* ACTION BUTTON */
+.btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    color: white;
+    text-decoration: none;
+    font-size: 13px;
+    transition: 0.3s;
+}
+
+.btn-edit { background: #facc15; }
+.btn-delete { background: #ef4444; }
+
+.btn:hover {
+    transform: scale(1.05);
+    opacity: 0.85;
+}
+
+/* FORM */
+form h4 {
+    color: white;
+    margin-bottom: 10px;
+}
+
+form input, form select, form textarea {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 12px;
+    border-radius: 12px;
+    border: none;
+    outline: none;
+}
+
+form button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 14px;
+    border: none;
+    background: rgba(255,255,255,0.35);
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+form button:hover {
+    background: rgba(255,255,255,0.55);
+}
+
+/* ANIMATION */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.hero {
+    animation: heroFade 1s ease forwards;
+}
+
+@keyframes heroFade {
+    from {
+        opacity: 0;
+        transform: translateY(-15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* STAGGER TABLE ROW */
+tbody tr {
+    opacity: 0;
+    animation: rowFade 0.5s ease forwards;
+}
+
+tbody tr:nth-child(1) { animation-delay: 0.1s; }
+tbody tr:nth-child(2) { animation-delay: 0.2s; }
+tbody tr:nth-child(3) { animation-delay: 0.3s; }
+tbody tr:nth-child(4) { animation-delay: 0.4s; }
+tbody tr:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes rowFade {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* FOOTER IDENTITAS */
+.footer {
+    margin-top: 25px;
+    text-align: center;
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+}
