@@ -1,6 +1,3 @@
-CREATE DATABASE mkom;
-USE mkom;
-
 CREATE TABLE peserta (
     id_peserta INT AUTO_INCREMENT PRIMARY KEY,
     nama_peserta VARCHAR(100),

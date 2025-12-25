@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  # --- SERVICE 1: PHP ---
+  backend:
+    container_name: app_uas
+    image: php:8.1-apache
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - database
+    # Instal ekstensi mysqli
+    command: sh -c "docker-php-ext-install mysqli && apache2-foreground"
+
+  # --- SERVICE 2: DATABASE ---
+  # (Perhatikan: Tulisan 'database' ini harus sejajar dengan 'backend' di atas)
+  database:
+    container_name: db_uas
+    image: mariadb:10.6
+    environment: # (Perhatikan penulisannya: environment)
+      MYSQL_ROOT_PASSWORD: "092004" # Pakai kutip biar aman kalau angka
+      MYSQL_DATABASE: tripujiantoro
+    volumes:
+      - data_uas:/var/lib/mysql
+      # Import database otomatis (sejajar dengan baris di atasnya)
+      #- ./database.sql:/docker-entrypoint-initdb.d/database.sql
+
+volumes:
+  data_uas: # (Wajib pakai titik dua)
