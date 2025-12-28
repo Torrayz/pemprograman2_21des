@@ -80,10 +80,10 @@ Password: user123
 Jika ingin reset database ke kondisi awal:
 
 ```sql
-1. Di phpMyAdmin, pilih database mkom
+1. Di phpMyAdmin, pilih database tripujiantoro
 2. Klik tab SQL
-3. Jalankan: DROP DATABASE mkom;
-4. Buat database baru: CREATE DATABASE mkom;
+3. Jalankan: DROP DATABASE tripujiantoro;
+4. Buat database baru: CREATE DATABASE tripujiantoro;
 5. Jalankan ulang file database.sql
 ```
 
