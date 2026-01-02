@@ -60,9 +60,10 @@ CREATE TABLE IF NOT EXISTS payments (
     FOREIGN KEY (id_course) REFERENCES courses(id_course) ON DELETE CASCADE
 );
 
--- Admin user (password: admin123 - hashed)
+-- Password disimpan sebagai plain text (tidak di-hash) untuk mempermudah testing
+-- Admin user dengan password: admin123
 INSERT INTO users (nama_lengkap, email, password, no_telepon, role) VALUES
-('Admin Mister Komputer', 'admin@misterkomputer.com', '$2y$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcg7b3XeKeUxWdeS86E36P4/27e', '081234567890', 'admin');
+('Admin Mister Komputer', 'admin@misterkomputer.com', 'admin123', '081234567890', 'admin');
 
 -- Sample courses
 INSERT INTO courses (nama_course, deskripsi, harga, durasi_jam, instruktur, kapasitas) VALUES
@@ -73,6 +74,6 @@ INSERT INTO courses (nama_course, deskripsi, harga, durasi_jam, instruktur, kapa
 ('Data Analytics', 'Analisis data dan business intelligence untuk pengambilan keputusan yang tepat', 700000, 10, 'Tri Puji Antoro', 20),
 ('Sistem & Networking', 'Kelola jaringan komputer dan sistem operasi secara profesional', 850000, 15, 'Tri Puji Antoro', 18);
 
--- Sample enrolled user
+-- User demo dengan password: user123 (plain text)
 INSERT INTO users (nama_lengkap, email, password, no_telepon, alamat, role) VALUES
-('Budi Santoso', 'budi@email.com', '$2y$10$RbNbhH7l3LgxzfS7MvUqde4iP64CK8YHv0s3DQ2AIp8wTpwkXtB2W', '081234567890', 'Jl. Merdeka No. 123, Jakarta', 'user');
+('Budi Santoso', 'budi@email.com', 'user123', '081234567890', 'Jl. Merdeka No. 123, Jakarta', 'user');

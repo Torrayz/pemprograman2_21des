@@ -1,4 +1,53 @@
-<?php include '../config/koneksi.php'; ?>
+<?php 
+include '../config/koneksi.php'; 
+
+$error = '';
+$success = '';
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $email = isset($_POST['email']) ? mysqli_real_escape_string($koneksi, trim($_POST['email'])) : '';
+    $password = isset($_POST['password']) ? $_POST['password'] : '';
+
+    // Validasi input
+    if (empty($email) || empty($password)) {
+        $error = 'Email dan password harus diisi!';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = 'Format email tidak valid!';
+    } else {
+        // Query untuk cek user
+        $query = "SELECT id_user, nama_lengkap, email, password, role, status FROM users WHERE email = '$email'";
+        $result = mysqli_query($koneksi, $query);
+
+        if (!$result) {
+            $error = 'Database error: ' . mysqli_error($koneksi);
+        } else {
+            $row = mysqli_fetch_assoc($result);
+
+            if ($row) {
+                if ($row['status'] == 'nonaktif') {
+                    $error = 'Akun Anda tidak aktif. Hubungi admin!';
+                } elseif ($password === $row['password']) {
+                    $_SESSION['id_user'] = $row['id_user'];
+                    $_SESSION['nama_lengkap'] = $row['nama_lengkap'];
+                    $_SESSION['email'] = $row['email'];
+                    $_SESSION['role'] = $row['role'];
+
+                    if ($row['role'] == 'admin') {
+                        header('Location: ../admin/dashboard.php');
+                    } else {
+                        header('Location: ../pages/dashboard-user.php');
+                    }
+                    exit();
+                } else {
+                    $error = 'Email atau password salah!';
+                }
+            } else {
+                $error = 'Email tidak terdaftar!';
+            }
+        }
+    }
+}
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -29,38 +78,11 @@
         <p class="auth-subtitle">Masuk ke akun Anda untuk melanjutkan</p>
 
         <?php
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $email = mysqli_real_escape_string($koneksi, $_POST['email']);
-            $password = mysqli_real_escape_string($koneksi, $_POST['password']);
-
-            $error = '';
-
-            if (empty($email) || empty($password)) {
-                $error = 'Email dan password harus diisi!';
-            } else {
-                $query = mysqli_query($koneksi, "SELECT * FROM users WHERE email = '$email'");
-                $row = mysqli_fetch_assoc($query);
-
-                if ($row && password_verify($password, $row['password'])) {
-                    $_SESSION['id_user'] = $row['id_user'];
-                    $_SESSION['nama_lengkap'] = $row['nama_lengkap'];
-                    $_SESSION['email'] = $row['email'];
-                    $_SESSION['role'] = $row['role'];
-
-                    if ($row['role'] == 'admin') {
-                        header('Location: ../admin/dashboard.php');
-                    } else {
-                        header('Location: ../pages/dashboard-user.php');
-                    }
-                    exit();
-                } else {
-                    $error = 'Email atau password salah!';
-                }
-            }
-
-            if ($error) {
-                echo '<div class="alert alert-error">' . $error . '</div>';
-            }
+        if ($error) {
+            echo '<div class="alert alert-error">' . htmlspecialchars($error) . '</div>';
+        }
+        if ($success) {
+            echo '<div class="alert alert-success">' . htmlspecialchars($success) . '</div>';
         }
         ?>
 
@@ -82,9 +104,9 @@
 
         <!-- Demo credentials untuk testing -->
         <div class="demo-credentials" style="margin-top: 30px; padding-top: 30px; border-top: 1px solid #ddd;">
-            <p style="font-size: 12px; color: #666;"><strong>Demo Akun:</strong></p>
-            <p style="font-size: 12px; color: #666;">Admin - Email: admin@misterkomputer.com | Password: admin123</p>
-            <p style="font-size: 12px; color: #666;">User - Email: budi@email.com | Password: user123</p>
+            <p style="font-size: 12px; color: #666;"><strong>Demo Akun untuk Testing:</strong></p>
+            <p style="font-size: 12px; color: #666;"><strong>Admin:</strong> admin@misterkomputer.com / admin123</p>
+            <p style="font-size: 12px; color: #666;"><strong>User:</strong> budi@email.com / user123</p>
         </div>
     </div>
 </div>

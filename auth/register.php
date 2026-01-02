@@ -30,18 +30,20 @@
 
         <?php
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $nama_lengkap = mysqli_real_escape_string($koneksi, $_POST['nama_lengkap']);
-            $email = mysqli_real_escape_string($koneksi, $_POST['email']);
+            $nama_lengkap = mysqli_real_escape_string($koneksi, trim($_POST['nama_lengkap']));
+            $email = mysqli_real_escape_string($koneksi, trim($_POST['email']));
             $password = mysqli_real_escape_string($koneksi, $_POST['password']);
             $confirm_password = mysqli_real_escape_string($koneksi, $_POST['confirm_password']);
-            $no_telepon = mysqli_real_escape_string($koneksi, $_POST['no_telepon']);
-            $alamat = mysqli_real_escape_string($koneksi, $_POST['alamat']);
+            $no_telepon = mysqli_real_escape_string($koneksi, trim($_POST['no_telepon']));
+            $alamat = mysqli_real_escape_string($koneksi, trim($_POST['alamat']));
 
             $error = '';
 
             // Validasi
             if (empty($nama_lengkap) || empty($email) || empty($password) || empty($no_telepon)) {
                 $error = 'Semua field harus diisi!';
+            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $error = 'Format email tidak valid!';
             } elseif ($password !== $confirm_password) {
                 $error = 'Password tidak sesuai!';
             } elseif (strlen($password) < 6) {
@@ -52,10 +54,8 @@
                 if (mysqli_num_rows($check_email) > 0) {
                     $error = 'Email sudah terdaftar!';
                 } else {
-                    $hashed_password = password_hash($password, PASSWORD_BCRYPT);
-                    
                     $insert = mysqli_query($koneksi, "INSERT INTO users (nama_lengkap, email, password, no_telepon, alamat, role) 
-                    VALUES ('$nama_lengkap', '$email', '$hashed_password', '$no_telepon', '$alamat', 'user')");
+                    VALUES ('$nama_lengkap', '$email', '$password', '$no_telepon', '$alamat', 'user')");
 
                     if ($insert) {
                         echo '<div class="alert alert-success">Registrasi berhasil! Silakan <a href="login.php">login di sini</a></div>';
@@ -66,7 +66,7 @@
             }
 
             if ($error) {
-                echo '<div class="alert alert-error">' . $error . '</div>';
+                echo '<div class="alert alert-error">' . htmlspecialchars($error) . '</div>';
             }
         }
         ?>

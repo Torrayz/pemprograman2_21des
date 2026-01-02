@@ -1,6 +1,9 @@
 <?php
-// Database Connection Configuration
-$koneksi = mysqli_connect("localhost", "root", "", "tripujiantoro");
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
+$koneksi = mysqli_connect("database", "user", "092004", "tripujiantoro");
 
 // Check connection
 if (!$koneksi) {
@@ -9,9 +12,4 @@ if (!$koneksi) {
 
 // Set charset to utf8
 mysqli_set_charset($koneksi, "utf8");
-
-// Session start
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
 ?>

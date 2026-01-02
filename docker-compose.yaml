@@ -1,0 +1,40 @@
+name: appUasTripujiantoro
+
+version: '3.8'
+
+services:
+  #webserverphpnya#
+  web:
+    build: .
+    container_name: php-uas
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      - database
+  
+  database:
+    image: mysql:5.7
+    container_name: mysql-uas
+    environment:
+      MYSQL_ROOT_PASSWORD: "092004"
+      MYSQL_DATABASE: tripujiantoro
+      MYSQL_USER: user
+      MYSQL_PASSWORD: "092004"
+    volumes:
+      - db_data:/var/lib/mysql
+      
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: pma-uas
+    links:
+      - database
+    environment:
+      PMA_HOST: database    # Konek ke service 'database'
+      PMA_PORT: 3306
+    ports:
+      - "8081:80"
+
+volumes:
+  db_data:
