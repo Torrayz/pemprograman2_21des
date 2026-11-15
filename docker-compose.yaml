@@ -1,40 +1,26 @@
-name: appUasTripujiantoro
-
-version: '3.8'
-
+name: mister-komputer
 services:
-  #webserverphpnya#
   web:
     build: .
-    container_name: php-uas
     ports:
-      - "8080:80"
+      - "127.0.0.1:8080:80"
+    environment:
+      DB_HOST: database
+      DB_NAME: tripujiantoro
+      DB_USER: ${DB_USER:?Set DB_USER in .env}
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
     volumes:
       - ./:/var/www/html
     depends_on:
       - database
-  
   database:
-    image: mysql:5.7
-    container_name: mysql-uas
+    image: mysql:8.4
     environment:
-      MYSQL_ROOT_PASSWORD: "092004"
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
       MYSQL_DATABASE: tripujiantoro
-      MYSQL_USER: user
-      MYSQL_PASSWORD: "092004"
+      MYSQL_USER: ${DB_USER:?Set DB_USER in .env}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
     volumes:
       - db_data:/var/lib/mysql
-      
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: pma-uas
-    links:
-      - database
-    environment:
-      PMA_HOST: database    # Konek ke service 'database'
-      PMA_PORT: 3306
-    ports:
-      - "8081:80"
-
 volumes:
   db_data:
