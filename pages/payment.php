@@ -21,23 +21,27 @@ if (!$enrollment) {
 $payment_success = false;
 $payment_error = '';
 
-// Handle payment submission
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $metode_pembayaran = mysqli_real_escape_string($koneksi, $_POST['metode_pembayaran']);
-    
-    $insert_payment = mysqli_query($koneksi, "INSERT INTO payments 
-    (id_enrollment, id_user, id_course, jumlah_pembayaran, metode_pembayaran, status_pembayaran) 
-    VALUES ($id_enrollment, $id_user, " . $enrollment['id_course'] . ", " . $enrollment['harga'] . ", '$metode_pembayaran', 'verified')");
-
-    if ($insert_payment) {
-        // Update enrollment status
-        mysqli_query($koneksi, "UPDATE enrollments SET status_pembayaran = 'sudah_bayar' WHERE id_enrollment = $id_enrollment");
-        $payment_success = true;
-        $enrollment['status_pembayaran'] = 'sudah_bayar';
+// This is a demo payment request; it is NEVER proof of a completed payment.
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $method = (string)($_POST['metode_pembayaran'] ?? '');
+    $allowed = ['bank_transfer', 'ewallet', 'credit_card'];
+    if (!valid_csrf() || !in_array($method, $allowed, true)) {
+        $payment_error = 'Permintaan tidak valid.';
     } else {
-        $payment_error = 'Terjadi kesalahan saat memproses pembayaran!';
+        try {
+            $stmt = $koneksi->prepare("INSERT INTO payments (id_enrollment,id_user,id_course,jumlah_pembayaran,metode_pembayaran,status_pembayaran) VALUES (?,?,?,?,?,'pending')");
+            $courseId = (int)$enrollment['id_course'];
+            $amount = (float)$enrollment['harga'];
+            $stmt->bind_param('iiids', $id_enrollment, $id_user, $courseId, $amount, $method);
+            $stmt->execute();
+            $payment_success = true;
+        } catch (mysqli_sql_exception $error) {
+            error_log($error->getMessage());
+            $payment_error = 'Pengajuan pembayaran gagal.';
+        }
     }
 }
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -70,8 +74,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <?php if ($payment_success): ?>
     <div class="alert alert-success" style="text-align: center; margin-bottom: 30px;">
-        <h3>Pembayaran Berhasil!</h3>
-        <p>Terima kasih telah melakukan pembayaran. Anda sekarang dapat mengakses materi kursus.</p>
+        <h3>Permintaan Pembayaran Dicatat</h3>
+        <p>Status masih pending. Belum ada transaksi pembayaran yang diverifikasi; akses kursus tidak berubah.</p>
     </div>
     <div style="text-align: center; margin-bottom: 30px;">
         <a href="dashboard-user.php" class="btn btn-primary">Kembali ke Dashboard</a>
@@ -110,6 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php endif; ?>
 
                 <form method="POST" class="form-payment">
+                    <?php echo csrf_input(); ?>
                     <div class="payment-methods">
                         <div class="payment-option">
                             <input type="radio" id="bank_transfer" name="metode_pembayaran" value="bank_transfer" checked>
@@ -139,11 +144,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-block" style="margin-top: 20px;">Lanjut Pembayaran</button>
+                    <button type="submit" class="btn btn-primary btn-block" style="margin-top: 20px;">Simpan Permintaan Pembayaran</button>
                 </form>
 
                 <p style="text-align: center; font-size: 12px; color: #666; margin-top: 20px;">
-                    Pembayaran Anda aman dan terenkripsi
+                    Mode simulasi: sistem ini tidak memproses pembayaran nyata.
                 </p>
             </div>
         </div>
