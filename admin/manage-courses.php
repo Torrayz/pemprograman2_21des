@@ -5,39 +5,40 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
     exit();
 }
 
-// Handle delete course
-if (isset($_GET['delete'])) {
-    $id = intval($_GET['delete']);
-    mysqli_query($koneksi, "DELETE FROM enrollments WHERE id_course = $id");
-    mysqli_query($koneksi, "DELETE FROM courses WHERE id_course = $id");
-    header('Location: manage-courses.php');
-    exit();
-}
-
-// Handle add/edit course
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $nama_course = mysqli_real_escape_string($koneksi, $_POST['nama_course']);
-    $deskripsi = mysqli_real_escape_string($koneksi, $_POST['deskripsi']);
-    $harga = floatval($_POST['harga']);
-    $durasi_jam = intval($_POST['durasi_jam']);
-    $instruktur = mysqli_real_escape_string($koneksi, $_POST['instruktur']);
-    $kapasitas = intval($_POST['kapasitas']);
-
-    if (isset($_POST['id_course']) && $_POST['id_course'] != '') {
-        // Update
-        $id = intval($_POST['id_course']);
-        $update = mysqli_query($koneksi, "UPDATE courses SET nama_course = '$nama_course', deskripsi = '$deskripsi', 
-        harga = $harga, durasi_jam = $durasi_jam, instruktur = '$instruktur', kapasitas = $kapasitas 
-        WHERE id_course = $id");
-        $message = $update ? 'Kursus berhasil diupdate!' : 'Gagal mengupdate kursus!';
+$message = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!valid_csrf()) { http_response_code(403); exit('Token keamanan tidak valid.'); }
+    if (($_POST['action'] ?? '') === 'delete') {
+        $id = filter_var($_POST['id_course'] ?? null, FILTER_VALIDATE_INT);
+        if (!$id) { http_response_code(422); exit('ID kursus tidak valid.'); }
+        $stmt = $koneksi->prepare('DELETE FROM courses WHERE id_course=?');
+        $stmt->bind_param('i',$id);
+        $stmt->execute();
+        header('Location: manage-courses.php');
+        exit;
+    }
+    $name = trim((string)($_POST['nama_course'] ?? ''));
+    $description = trim((string)($_POST['deskripsi'] ?? ''));
+    $price = (float)($_POST['harga'] ?? 0);
+    $hours = (int)($_POST['durasi_jam'] ?? 0);
+    $instructor = trim((string)($_POST['instruktur'] ?? ''));
+    $capacity = (int)($_POST['kapasitas'] ?? 0);
+    if ($name === '' || $description === '' || $instructor === '' || $price < 0 || $hours < 1 || $capacity < 1) {
+        $message = 'Data kursus tidak valid.';
     } else {
-        // Insert
-        $insert = mysqli_query($koneksi, "INSERT INTO courses (nama_course, deskripsi, harga, durasi_jam, instruktur, kapasitas) 
-        VALUES ('$nama_course', '$deskripsi', $harga, $durasi_jam, '$instruktur', $kapasitas)");
-        $message = $insert ? 'Kursus berhasil ditambahkan!' : 'Gagal menambahkan kursus!';
+        if (!empty($_POST['id_course'])) {
+            $id = (int)$_POST['id_course'];
+            $stmt = $koneksi->prepare('UPDATE courses SET nama_course=?,deskripsi=?,harga=?,durasi_jam=?,instruktur=?,kapasitas=? WHERE id_course=?');
+            $stmt->bind_param('ssdisii',$name,$description,$price,$hours,$instructor,$capacity,$id);
+        } else {
+            $stmt = $koneksi->prepare('INSERT INTO courses(nama_course,deskripsi,harga,durasi_jam,instruktur,kapasitas) VALUES(?,?,?,?,?,?)');
+            $stmt->bind_param('ssdisi',$name,$description,$price,$hours,$instructor,$capacity);
+        }
+        $stmt->execute();
+        header('Location: manage-courses.php');
+        exit;
     }
 }
-
 $edit_data = null;
 if (isset($_GET['edit'])) {
     $id = intval($_GET['edit']);
@@ -81,7 +82,7 @@ if (isset($_GET['edit'])) {
     <div class="admin-form-section">
         <h2><?php echo $edit_data ? 'Edit Kursus' : 'Tambah Kursus Baru'; ?></h2>
         
-        <form method="POST" class="form-admin">
+        <form method="POST" class="form-admin"><?php echo csrf_input(); ?>
             <?php if ($edit_data): ?>
                 <input type="hidden" name="id_course" value="<?php echo $edit_data['id_course']; ?>">
             <?php endif; ?>
@@ -156,7 +157,7 @@ if (isset($_GET['edit'])) {
                     <td><?php echo htmlspecialchars($row['instruktur']); ?></td>
                     <td>
                         <a href="manage-courses.php?edit=<?php echo $row['id_course']; ?>" class="btn btn-small">Edit</a>
-                        <a href="manage-courses.php?delete=<?php echo $row['id_course']; ?>" class="btn btn-small btn-danger" onclick="return confirm('Yakin hapus kursus ini?');">Hapus</a>
+                        <form method="POST" style="display:inline"><?php echo csrf_input(); ?><input type="hidden" name="id_course" value="<?php echo (int)$row['id_course']; ?>"><button type="submit" name="action" value="delete" class="btn btn-small btn-danger" onclick="return confirm('Hapus kursus dan pendaftaran terkait?')">Hapus</button></form>
                     </td>
                 </tr>
                 <?php endwhile; ?>
