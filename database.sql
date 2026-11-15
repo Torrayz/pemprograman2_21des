@@ -60,10 +60,7 @@ CREATE TABLE IF NOT EXISTS payments (
     FOREIGN KEY (id_course) REFERENCES courses(id_course) ON DELETE CASCADE
 );
 
--- Password disimpan sebagai plain text (tidak di-hash) untuk mempermudah testing
--- Admin user dengan password: admin123
-INSERT INTO users (nama_lengkap, email, password, no_telepon, role) VALUES
-('Admin Mister Komputer', 'admin@misterkomputer.com', 'admin123', '081234567890', 'admin');
+-- No user credentials are seeded. Create accounts via registration with password_hash().
 
 -- Sample courses
 INSERT INTO courses (nama_course, deskripsi, harga, durasi_jam, instruktur, kapasitas) VALUES
@@ -74,6 +71,4 @@ INSERT INTO courses (nama_course, deskripsi, harga, durasi_jam, instruktur, kapa
 ('Data Analytics', 'Analisis data dan business intelligence untuk pengambilan keputusan yang tepat', 700000, 10, 'Tri Puji Antoro', 20),
 ('Sistem & Networking', 'Kelola jaringan komputer dan sistem operasi secara profesional', 850000, 15, 'Tri Puji Antoro', 18);
 
--- User demo dengan password: user123 (plain text)
-INSERT INTO users (nama_lengkap, email, password, no_telepon, alamat, role) VALUES
-('Budi Santoso', 'budi@email.com', 'user123', '081234567890', 'Jl. Merdeka No. 123, Jakarta', 'user');
+-- Demo credentials intentionally excluded. Do not commit passwords.
