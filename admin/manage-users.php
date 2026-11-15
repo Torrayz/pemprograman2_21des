@@ -5,24 +5,24 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
     exit();
 }
 
-// Handle user status update
-if (isset($_GET['update_status'])) {
-    $id = intval($_GET['update_status']);
-    $status = $_GET['status'] == 'aktif' ? 'nonaktif' : 'aktif';
-    mysqli_query($koneksi, "UPDATE users SET status = '$status' WHERE id_user = $id AND role = 'user'");
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!valid_csrf()) { http_response_code(403); exit('Token keamanan tidak valid.'); }
+    $id = filter_var($_POST['user_id'] ?? null, FILTER_VALIDATE_INT);
+    $action = $_POST['action'] ?? '';
+    if (!$id || !in_array($action,['toggle','delete'],true)) { http_response_code(422); exit('Permintaan tidak valid.'); }
+    if ($action === 'toggle') {
+        $stmt = $koneksi->prepare("UPDATE users SET status=IF(status='aktif','nonaktif','aktif') WHERE id_user=? AND role='user'");
+        $stmt->bind_param('i',$id);
+        $stmt->execute();
+    } else {
+        $stmt = $koneksi->prepare("DELETE FROM users WHERE id_user=? AND role='user'");
+        $stmt->bind_param('i',$id);
+        $stmt->execute();
+    }
     header('Location: manage-users.php');
-    exit();
+    exit;
 }
 
-// Handle delete user
-if (isset($_GET['delete'])) {
-    $id = intval($_GET['delete']);
-    mysqli_query($koneksi, "DELETE FROM payments WHERE id_user = $id");
-    mysqli_query($koneksi, "DELETE FROM enrollments WHERE id_user = $id");
-    mysqli_query($koneksi, "DELETE FROM users WHERE id_user = $id AND role = 'user'");
-    header('Location: manage-users.php');
-    exit();
-}
 ?>
 <!DOCTYPE html>
 <html>
@@ -90,10 +90,12 @@ if (isset($_GET['delete'])) {
                         ?>
                     </td>
                     <td>
-                        <a href="manage-users.php?update_status=<?php echo $row['id_user']; ?>&status=<?php echo $row['status']; ?>" class="btn btn-small">
-                            <?php echo $row['status'] == 'aktif' ? 'Nonaktifkan' : 'Aktifkan'; ?>
-                        </a>
-                        <a href="manage-users.php?delete=<?php echo $row['id_user']; ?>" class="btn btn-small btn-danger" onclick="return confirm('Yakin hapus user ini?');">Hapus</a>
+                        <form method="POST" style="display:inline-flex;gap:6px">
+                            <?php echo csrf_input(); ?>
+                            <input type="hidden" name="user_id" value="<?php echo (int)$row['id_user']; ?>">
+                            <button type="submit" name="action" value="toggle" class="btn btn-small"><?php echo $row['status']==='aktif' ? 'Nonaktifkan' : 'Aktifkan'; ?></button>
+                            <button type="submit" name="action" value="delete" class="btn btn-small btn-danger" onclick="return confirm('Hapus pengguna dan data terkait secara permanen?')">Hapus</button>
+                        </form>
                     </td>
                 </tr>
                 <?php endwhile; ?>
