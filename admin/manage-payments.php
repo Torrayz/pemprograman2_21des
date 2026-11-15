@@ -5,26 +5,46 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
     exit();
 }
 
-// Handle verify payment
-if (isset($_GET['verify'])) {
-    $id = intval($_GET['verify']);
-    mysqli_query($koneksi, "UPDATE payments SET status_pembayaran = 'verified' WHERE id_payment = $id");
-    
-    // Update enrollment status
-    $payment = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT id_enrollment FROM payments WHERE id_payment = $id"));
-    mysqli_query($koneksi, "UPDATE enrollments SET status_pembayaran = 'sudah_bayar' WHERE id_enrollment = " . $payment['id_enrollment']);
-    
-    header('Location: manage-payments.php');
-    exit();
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!valid_csrf()) {
+        http_response_code(403);
+        exit('Token keamanan tidak valid.');
+    }
+    $id = filter_var($_POST['payment_id'] ?? null, FILTER_VALIDATE_INT);
+    $action = $_POST['action'] ?? '';
+    if (!$id || !in_array($action, ['verify','reject'], true)) {
+        http_response_code(422);
+        exit('Permintaan tidak valid.');
+    }
+    $koneksi->begin_transaction();
+    try {
+        $stmt = $koneksi->prepare("SELECT id_enrollment FROM payments WHERE id_payment=? AND status_pembayaran='pending' FOR UPDATE");
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        if (!$row) throw new RuntimeException('Pembayaran pending tidak ditemukan.');
+        if ($action === 'verify') {
+            $update = $koneksi->prepare("UPDATE payments SET status_pembayaran='verified' WHERE id_payment=?");
+            $update->bind_param('i', $id);
+            $update->execute();
+            $enroll = $koneksi->prepare("UPDATE enrollments SET status_pembayaran='sudah_bayar' WHERE id_enrollment=?");
+            $enroll->bind_param('i', $row['id_enrollment']);
+            $enroll->execute();
+        } else {
+            $update = $koneksi->prepare("UPDATE payments SET status_pembayaran='failed' WHERE id_payment=?");
+            $update->bind_param('i', $id);
+            $update->execute();
+        }
+        $koneksi->commit();
+        header('Location: manage-payments.php');
+        exit;
+    } catch (Throwable $error) {
+        $koneksi->rollback();
+        error_log($error->getMessage());
+        $message = 'Gagal memperbarui status pembayaran.';
+    }
 }
 
-// Handle reject payment
-if (isset($_GET['reject'])) {
-    $id = intval($_GET['reject']);
-    mysqli_query($koneksi, "UPDATE payments SET status_pembayaran = 'failed' WHERE id_payment = $id");
-    header('Location: manage-payments.php');
-    exit();
-}
 ?>
 <!DOCTYPE html>
 <html>
@@ -54,7 +74,7 @@ if (isset($_GET['reject'])) {
 </nav>
 
 <div class="container" style="margin-top: 100px; margin-bottom: 50px;">
-    <h1>Kelola Pembayaran</h1>
+    <h1>Kelola Pembayaran</h1><p>Verifikasi bersifat manual dan hanya boleh dilakukan setelah pembayaran benar-benar diterima.</p><?php if (!empty($message)): ?><p class="alert alert-error"><?= htmlspecialchars($message) ?></p><?php endif; ?>
 
     <div class="admin-list-section">
         <h2>Daftar Pembayaran</h2>
@@ -99,8 +119,12 @@ if (isset($_GET['reject'])) {
                     <td><?php echo date('d M Y H:i', strtotime($row['created_at'])); ?></td>
                     <td>
                         <?php if ($row['status_pembayaran'] == 'pending'): ?>
-                            <a href="manage-payments.php?verify=<?php echo $row['id_payment']; ?>" class="btn btn-small">Verifikasi</a>
-                            <a href="manage-payments.php?reject=<?php echo $row['id_payment']; ?>" class="btn btn-small btn-danger">Tolak</a>
+                            <form method="POST" style="display:inline-flex;gap:6px">
+                                <?php echo csrf_input(); ?>
+                                <input type="hidden" name="payment_id" value="<?php echo (int)$row['id_payment']; ?>">
+                                <button class="btn btn-small" type="submit" name="action" value="verify" onclick="return confirm('Pastikan pembayaran benar-benar diterima sebelum verifikasi. Lanjutkan?')">Verifikasi manual</button>
+                                <button class="btn btn-small btn-danger" type="submit" name="action" value="reject">Tolak</button>
+                            </form>
                         <?php else: ?>
                             <span style="color: #666;">-</span>
                         <?php endif; ?>
