@@ -1,3 +1,15 @@
+# MISTER KOMPUTER — React + Supabase (Live Frontend)
+
+**Current implementation:** [React app in `web/`](web/README.md) · [Vercel Production](https://mister-komputer-torray.vercel.app)
+
+The PHP/MySQL and Docker code remains at repository root as the preserved original coursework. The current Vercel frontend deploys the **`web/` React+Vite** app and reads/writes Supabase `torray-workspace`.
+
+**Data migration:** all six sample courses from the repository SQL were imported. Existing MySQL accounts, enrollments, certificates and payment history were **not** imported because no live MySQL export is available. Sign-in uses Supabase Auth, not MySQL password hashes. Payments are simulation requests only.
+
+---
+
+## Legacy PHP reference (not the deployed application)
+
 # MISTER KOMPUTER — Course Management Prototype
 
 A PHP + MySQL educational course-management system with course catalogues, enrollments, administrative roles, and manual payment review.
