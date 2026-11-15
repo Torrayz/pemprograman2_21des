@@ -8,7 +8,7 @@
     <meta name="description" content="Mister Komputer - Kursus komputer terpercaya dengan instruktur berpengalaman">
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/landing.css">
-</head>
+<style>.hero{background:linear-gradient(120deg,#0c2046,#244d68);overflow:hidden}.hero-title{letter-spacing:-.035em}.program-card,.stat-card,.feature-item{transition:transform .28s,box-shadow .28s}.program-card:hover,.stat-card:hover,.feature-item:hover{transform:translateY(-4px)}.navbar{backdrop-filter:blur(14px)}@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}</style></head>
 <body>
 
 <!-- NAVBAR -->
@@ -59,7 +59,7 @@
 <div class="stats-section">
     <div class="stats-container">
         <div class="stat-card">
-            <div class="stat-number">2500+</div>
+            <div class="stat-number">Demo</div>
             <div class="stat-text">Peserta Puas</div>
         </div>
         <div class="stat-card">
@@ -67,11 +67,11 @@
             <div class="stat-text">Program Kursus</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number">98%</div>
+            <div class="stat-number">—</div>
             <div class="stat-text">Tingkat Kepuasan</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number">8+</div>
+            <div class="stat-number">—</div>
             <div class="stat-text">Tahun Berpengalaman</div>
         </div>
     </div>
@@ -135,14 +135,14 @@
 
             <div class="feature-item">
                 <div class="feature-icon">🏆</div>
-                <h3>Sertifikat Resmi</h3>
-                <p>Dapatkan sertifikat yang diakui secara nasional dan internasional</p>
+                <h3>Sertifikat Kursus (Demo)</h3>
+                <p>Pelajari rancangan sertifikat dalam aplikasi demonstrasi.</p>
             </div>
 
             <div class="feature-item">
                 <div class="feature-icon">💼</div>
-                <h3>Job Placement</h3>
-                <p>Kami membantu peserta terbaik mendapatkan pekerjaan impian mereka</p>
+                <h3>Pendampingan Belajar (Konsep)</h3>
+                <p>Contoh fitur dukungan pembelajaran, bukan janji penempatan kerja.</p>
             </div>
 
             <div class="feature-item">
@@ -153,8 +153,8 @@
 
             <div class="feature-item">
                 <div class="feature-icon">🎓</div>
-                <h3>Akses Selamanya</h3>
-                <p>Akses materi pembelajaran seumur hidup untuk terus belajar</p>
+                <h3>Materi dan Progress</h3>
+                <p>Jelajahi rancangan akses materi pembelajaran dalam prototipe.</p>
             </div>
         </div>
     </div>
@@ -164,7 +164,7 @@
 <section class="cta-section">
     <div class="cta-container">
         <h2>Siap untuk Memulai Karir Baru?</h2>
-        <p>Daftar sekarang dan bergabunglah dengan ribuan peserta yang telah sukses</p>
+        <p>Daftar sekarang dan bergabunglah dengan peserta yang ingin mempelajari keterampilan digital</p>
         <div class="cta-buttons">
             <?php if (!isset($_SESSION['id_user'])): ?>
                 <a href="auth/register.php" class="btn btn-large btn-primary">Daftar Peserta Baru</a>
