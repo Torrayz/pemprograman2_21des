@@ -4,49 +4,33 @@ include '../config/koneksi.php';
 $error = '';
 $success = '';
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $email = isset($_POST['email']) ? mysqli_real_escape_string($koneksi, trim($_POST['email'])) : '';
-    $password = isset($_POST['password']) ? $_POST['password'] : '';
-
-    // Validasi input
-    if (empty($email) || empty($password)) {
-        $error = 'Email dan password harus diisi!';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = 'Format email tidak valid!';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = trim((string)($_POST['email'] ?? ''));
+    $password = (string)($_POST['password'] ?? '');
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL) || $password === '') {
+        $error = 'Masukkan email dan password yang valid.';
     } else {
-        // Query untuk cek user
-        $query = "SELECT id_user, nama_lengkap, email, password, role, status FROM users WHERE email = '$email'";
-        $result = mysqli_query($koneksi, $query);
-
-        if (!$result) {
-            $error = 'Database error: ' . mysqli_error($koneksi);
+        $stmt = $koneksi->prepare('SELECT id_user, nama_lengkap, email, password, role, status FROM users WHERE email = ? LIMIT 1');
+        $stmt->bind_param('s', $email);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        if (!$row || !password_verify($password, $row['password'])) {
+            $error = 'Email atau password tidak cocok. Akun lama dengan password plaintext harus direset.';
+        } elseif ($row['status'] !== 'aktif') {
+            $error = 'Akun tidak aktif.';
         } else {
-            $row = mysqli_fetch_assoc($result);
-
-            if ($row) {
-                if ($row['status'] == 'nonaktif') {
-                    $error = 'Akun Anda tidak aktif. Hubungi admin!';
-                } elseif ($password === $row['password']) {
-                    $_SESSION['id_user'] = $row['id_user'];
-                    $_SESSION['nama_lengkap'] = $row['nama_lengkap'];
-                    $_SESSION['email'] = $row['email'];
-                    $_SESSION['role'] = $row['role'];
-
-                    if ($row['role'] == 'admin') {
-                        header('Location: ../admin/dashboard.php');
-                    } else {
-                        header('Location: ../pages/dashboard-user.php');
-                    }
-                    exit();
-                } else {
-                    $error = 'Email atau password salah!';
-                }
-            } else {
-                $error = 'Email tidak terdaftar!';
-            }
+            session_regenerate_id(true);
+            $_SESSION['id_user'] = (int)$row['id_user'];
+            $_SESSION['nama_lengkap'] = $row['nama_lengkap'];
+            $_SESSION['email'] = $row['email'];
+            $_SESSION['role'] = $row['role'];
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            header('Location: ' . ($row['role'] === 'admin' ? '../admin/dashboard.php' : '../pages/dashboard-user.php'));
+            exit;
         }
     }
 }
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -102,12 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <p class="auth-link">Belum punya akun? <a href="register.php">Daftar di sini</a></p>
 
-        <!-- Demo credentials untuk testing -->
-        <div class="demo-credentials" style="margin-top: 30px; padding-top: 30px; border-top: 1px solid #ddd;">
-            <p style="font-size: 12px; color: #666;"><strong>Demo Akun untuk Testing:</strong></p>
-            <p style="font-size: 12px; color: #666;"><strong>Admin:</strong> admin@misterkomputer.com / admin123</p>
-            <p style="font-size: 12px; color: #666;"><strong>User:</strong> budi@email.com / user123</p>
-        </div>
+        <p class="auth-link">Akun demo lama tidak lagi berlaku. Password wajib di-hash.</p>
     </div>
 </div>
 
